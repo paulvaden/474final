@@ -135,6 +135,8 @@
   // plot all the data points on the SVG
   // and add tooltip functionality
   function plotData(map) {
+    
+    var formatTime = d3.timeFormat("%Y-%m-%d")
 
     // mapping functions
     let xMap = map.x;
@@ -145,13 +147,56 @@
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-    
-    svgLineGraph = d3.select("div")
-      .append('svg')
-      .attr('width', 250)
-      .attr('height', 290);
+      var mouseG = svgScatterPlot.append("g")
+      .attr("class", "mouse-over-effects");
 
-      
+    mouseG.append("path") // this is the black vertical line to follow mouse
+      .attr("class", "mouse-line")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("opacity", "0");
+
+      var lines = document.getElementsByClassName('line');
+
+      var mousePerLine = mouseG.selectAll('.mouse-per-line')
+        .data(data)
+        .enter()
+        .append("g")
+        .attr("class", "mouse-per-line");
+  
+
+        mousePerLine.append("text")
+        .attr("transform", "translate(10,3)");
+
+      mouseG.append('svg:rect')
+      .attr('width', 1250) 
+      .attr('height', 750)
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('mouseover', function() { 
+        d3.select(".mouse-line")
+          .style("opacity", "1");
+      d3.selectAll(".mouse-per-line text")
+        .style("opacity", "1");
+      })
+      .on('mousemove', function() { 
+        var mouse = d3.mouse(this);
+        d3.select(".mouse-line")
+          .attr("d", function() {
+            var d = "M" + mouse[0] + "," + 1250;
+            d += " " + mouse[0] + "," + 0;
+            return d;
+          });
+
+          d3.selectAll(".mouse-per-line")
+          .attr("transform", function(d, i) {            
+            d3.select(this).select('text')
+              .text(formatTime(map.xScale.invert(mouse[0])));
+              
+            return "translate(" + mouse[0] + "," + 200 +")";
+          });
+
+        });
         
       var valueLine = d3.line()
       .x(function (d) { return map.xScale(d.Year); })
@@ -189,7 +234,6 @@ svgScatterPlot.append("g")
 .attr("stroke", "green")
 .attr("stroke-width", 2);
 
-    var formatTime = d3.timeFormat("%Y-%m-%d")
 
     // append data to SVG and plot as points
     svgScatterPlot.selectAll('.dot')
@@ -198,7 +242,7 @@ svgScatterPlot.append("g")
       .append('circle')
         .attr('cx', xMap)
         .attr('cy', yMap)
-        .attr('r', 5)
+        .attr('r', 6)
         .attr('fill', "#4286f4")
         // add tooltip functionality to points
         .on("mouseover", (d) => {
@@ -230,7 +274,7 @@ svgScatterPlot.append("g")
     .append('circle')
       .attr('cx', xMap)
       .attr('cy', map.yMap2)
-      .attr('r', 5)
+      .attr('r', 6)
       .attr('fill', "black")
       // add tooltip functionality to points
       .on("mouseover", (d) => {
@@ -262,7 +306,7 @@ svgScatterPlot.append("g")
     .append('circle')
       .attr('cx', xMap)
       .attr('cy', map.yMap3)
-      .attr('r', 5)
+      .attr('r', 6)
       .attr('fill', "green")
       // add tooltip functionality to points
       .on("mouseover", (d) => {
